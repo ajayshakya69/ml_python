@@ -12,6 +12,9 @@ from fastapi import FastAPI, HTTPException, Body
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+from dotenv import load_dotenv
+
+load_dotenv(".env.local") 
 
 
 
@@ -582,8 +585,7 @@ if __name__ == "__main__":
 
 # Request model for initializing a session
 class InitSessionRequest(BaseModel):
-    api_key: str  # Groq API key for LLM access
-    name: Optional[str] = "Lauren"  # Counselor name (default: Lauren)
+    name: Optional[str] = "User"  # Counselor name (default: Lauren)
 
 @app.post("/init_session")
 def init_session(req: InitSessionRequest):
@@ -591,7 +593,8 @@ def init_session(req: InitSessionRequest):
     Initialize a new chatbot session. Returns a session_id and profile file path.
     """
     try:
-        counselor = CollegeCounselorChatbot(api_key=req.api_key, name=req.name)
+        api_key = os.getenv("API_KEY")
+        counselor = CollegeCounselorChatbot(api_key, name=req.name)
         session_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         sessions[session_id] = counselor
         return {"session_id": session_id, "profile_file": str(counselor.profile_filename)}
