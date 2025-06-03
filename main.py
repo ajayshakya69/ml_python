@@ -11,10 +11,9 @@ import tempfile
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
-# =====================
-# Data Model Definition
-# =====================
+
 
 class StudentData(BaseModel):
     """
@@ -561,14 +560,25 @@ sessions = {}
 # Create FastAPI app
 app = FastAPI(title="College Counselor Chatbot API")
 
+# Specify the port number
+port = os.getenv("PORT", 8000)
+
 # Enable CORS for all origins (for local dev/testing)
-app.add_middleware(
+app.add_middleware( 
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.get("/")
+def read_root():
+    return {"message": "Hello from FastAPI!"}
+
+# Main entrypoint
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 10000))  # Use Render's provided $PORT
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
 
 # Request model for initializing a session
 class InitSessionRequest(BaseModel):
@@ -634,3 +644,5 @@ def download_profile(session_id: str):
     if not counselor.profile_filename or not os.path.exists(counselor.profile_filename):
         raise HTTPException(status_code=404, detail="Profile file not found")
     return FileResponse(str(counselor.profile_filename), filename=os.path.basename(counselor.profile_filename), media_type='text/plain')
+
+
